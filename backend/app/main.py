@@ -1,3 +1,4 @@
+# Sprint 1 - Authentication module implementation
 from fastapi import FastAPI
 from app.database import engine, Base
 from app.routers import auth, complaints
