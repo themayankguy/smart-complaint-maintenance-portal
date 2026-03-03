@@ -24,3 +24,17 @@ class ComplaintResponse(ComplaintBase):
 
     class Config:
         from_attributes = True
+
+class ComplaintAssign(BaseModel):
+    assigned_to: str # Must be a technician username or ID, but model uses String
+
+class ComplaintStatusUpdate(BaseModel):
+    status: str # in_progress, resolved, closed
+
+class ComplaintAnalytics(BaseModel):
+    total: int
+    pending: int
+    assigned: int
+    in_progress: int
+    resolved: int
+    closed: int
