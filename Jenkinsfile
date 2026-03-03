@@ -9,17 +9,23 @@ pipeline {
             }
         }
 
-        stage('Setup Python') {
+        stage('Install Dependencies') {
             steps {
-                sh 'python3 --version'
                 sh 'python3 -m venv venv'
                 sh '. venv/bin/activate && pip install -r backend/requirements.txt'
             }
         }
 
-        stage('Build Success') {
+        stage('Lint Check') {
             steps {
-                sh 'echo "SCMP CI Pipeline Running Successfully 🚀"'
+                sh '. venv/bin/activate && pip install flake8'
+                sh '. venv/bin/activate && flake8 backend || true'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'echo "No tests yet — pipeline ready for Sprint 2"'
             }
         }
     }
