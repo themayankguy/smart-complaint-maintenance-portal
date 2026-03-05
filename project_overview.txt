@@ -1,0 +1,57 @@
+SMART COMPLAINT & MAINTENANCE PORTAL (SCMP)
+===========================================
+A Comprehensive Technical Overview & Case Study
+
+1. THE REAL-WORLD PROBLEM WE SOLVED
+------------------------------------
+In large organizations, residential complexes, and university campuses, facility management is often chaotic. Complaints (plumbing, IT, electrical, etc.) are frequently managed via disjointed WhatsApp groups, paper forms, or generic emails. This scattered approach leads to:
+- Lost SLA tracking (no one knows how long a ticket has been open).
+- Inefficient delegation (technicians don't know what to prioritize).
+- Zero visibility for management (no analytics on recurring issues or bottlenecks).
+- Poor user experience (requesters have no idea if their ticket is even being looked at).
+
+2. THE SCMP SOLUTION
+------------------------------------
+The Smart Complaint & Maintenance Portal solves this by centralizing the flow into a modern, three-tiered Role-Based Access Control (RBAC) system:
+
+A. The "User" Experience:
+Students/Residents can instantly lodge complaints with categorized subjects, reducing ambiguity. They get a live dashboard tracking their ticket status from 'Pending' -> 'Assigned' -> 'In Progress' -> 'Resolved'.
+
+B. The "Technician" Experience:
+Maintenance staff arrive at a streamlined queue showing exactly what is assigned to them. They can update the status directly, significantly cutting down on administrative overhead. 
+
+C. The "Admin/Management" Experience:
+Facility managers get a real-time 'Global Insights' dashboard. They can monitor the distribution of complaints across categories, see exactly how many tickets are bottlenecked, and track overall resolution metrics efficiently.
+
+3. TECHNOLOGY STACK
+------------------------------------
+- Frontend: React.js configured via Vite, styled with modern TailwindCSS framework + Framer Motion for premium micro-animations. Recharts used for dynamic data visualization.
+- Backend: Python FastAPI chosen for its extreme raw performance, async typing capabilities, and built-in Swagger OpenAPI documentation.
+- Database: MySQL relational database, modeled using SQLAlchemy ORM for secure transactional integrity and simple migrations.
+- Authentication: Secure stateless JWT (JSON Web Tokens) with PBKDF2 password hashing.
+
+4. DEVOPS & CI/CD PIPELINE (JENKINS)
+------------------------------------
+To ensure enterprise-level stability, we implemented a continuous integration pipeline using Jenkins.
+- The project root contains a declarative `Jenkinsfile`.
+- When code is pushed to the `develop` or `main` branches on GitHub, the Jenkins server automatically checks out the source code.
+- It is configured to run tests, validate linting constraints, and ensure the build completes asynchronously without human intervention.
+- Branches like `feature/` are used for isolated development, verified locally, and then merged into `develop` for a clean deployment.
+
+5. KEY CHALLENGES & ERRORS OVERCOME
+------------------------------------
+- Port Squatting & Networking: Vite and Node occasionally froze handling macOS local networking. We successfully bypassed this architectural roadblock by utilizing a Python-based HTTP server to cleanly route requests during testing without interfering with active build processes.
+- Routing Dead Ends: When testing the packaged frontend, the SimpleHTTPServer wasn't configured to handle React's dynamic Single Page Application (SPA) routing, resulting in 404 errors on refresh. We dynamically wrote a custom `spa_server.py` that overrides the default behavior to route all 404s back to `index.html`, preserving React Router state.
+- Database Integrity Collisions: Encountered a fatal 500 error when identical emails attempted to register. We intervened in the backend logic, migrating away from raw SQL `IntegrityError` crashes to cleanly handled `HTTPException(400)` validations.
+
+6. GITHUB COMMIT HISTORY
+------------------------------------
+c49d8f0 Initial backend skeleton setup
+4334c64 Sprint 1: Added authentication module implementation
+9cb5566 Merge pull request #1 from themayankguy/feature/user-auth-backend
+7061f69 Added Jenkins CI pipeline
+ed1ee98 Updated Jenkins pipeline
+36063bd Sprint 2: Auth, JWT, RBAC, Complaint APIs completed
+991128c feat: implement full role-based frontend with admin, technician and user separation
+c01dce2 Saving work before switching to main
+c3f2969 feat(analytics): add category and resolution dashboard #12
