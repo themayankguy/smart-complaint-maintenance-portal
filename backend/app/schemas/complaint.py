@@ -5,6 +5,7 @@ from datetime import datetime
 class ComplaintBase(BaseModel):
     title: str
     description: str
+    category: str = "General"
 
 class ComplaintCreate(ComplaintBase):
     pass
@@ -13,6 +14,7 @@ class ComplaintUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
+    category: Optional[str] = None
     assigned_to: Optional[str] = None
 
 class ComplaintResponse(ComplaintBase):
@@ -20,6 +22,7 @@ class ComplaintResponse(ComplaintBase):
     status: str
     assigned_to: Optional[str]
     created_at: datetime
+    resolved_at: Optional[datetime]
     owner_id: int
 
     class Config:
@@ -38,3 +41,5 @@ class ComplaintAnalytics(BaseModel):
     in_progress: int
     resolved: int
     closed: int
+    avg_resolution_hours: float
+    categories: dict

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { PlusCircle, FileText, Type, AlertCircle } from 'lucide-react'
+import { PlusCircle, FileText, Type, AlertCircle, Grid } from 'lucide-react'
 import { complaintService } from '../services/api'
 
+const CATEGORIES = ['General', 'Electrical', 'Plumbing', 'IT & Tech', 'Carpentry', 'Cleaning']
+
 const CreateComplaint = () => {
-    const [formData, setFormData] = useState({ title: '', description: '' })
+    const [formData, setFormData] = useState({ title: '', description: '', category: '' })
     const [isLoading, setIsLoading] = useState(false)
     const [status, setStatus] = useState({ type: '', msg: '' })
     const navigate = useNavigate()
@@ -50,8 +52,8 @@ const CreateComplaint = () => {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={`mb-8 p-4 rounded-2xl text-sm font-semibold flex items-center gap-3 border ${status.type === 'success'
-                                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border-emerald-100 dark:border-emerald-800/50'
-                                : 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 border-rose-100 dark:border-rose-800/50'
+                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border-emerald-100 dark:border-emerald-800/50'
+                            : 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 border-rose-100 dark:border-rose-800/50'
                             }`}
                     >
                         <AlertCircle size={18} />
@@ -60,6 +62,24 @@ const CreateComplaint = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+                    <div className="space-y-4">
+                        <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">
+                            <Grid size={16} className="text-indigo-500" />
+                            Category
+                        </label>
+                        <select
+                            required
+                            className="input-field"
+                            value={formData.category}
+                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        >
+                            <option value="" disabled>Select a category first</option>
+                            {CATEGORIES.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="space-y-4">
                         <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">
                             <Type size={16} className="text-indigo-500" />

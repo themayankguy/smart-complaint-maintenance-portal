@@ -10,8 +10,10 @@ class Complaint(Base):
     title = Column(String(100), nullable=False)
     description = Column(Text, nullable=False)
     status = Column(String(20), default="pending")  # pending, in_progress, resolved
+    category = Column(String(50), default="General")
     assigned_to = Column(String(100), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="complaints")

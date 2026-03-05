@@ -6,6 +6,9 @@ from app.models.complaint import Complaint
 from app.schemas.complaint import ComplaintCreate, ComplaintUpdate, ComplaintResponse, ComplaintAssign, ComplaintStatusUpdate, ComplaintAnalytics
 from app.utils.security import get_current_user, RoleChecker
 from app.models.user import User
+from sqlalchemy import func
+from datetime import datetime
+import pytz
 
 router = APIRouter(prefix="/complaints", tags=["complaints"])
 
@@ -18,13 +21,40 @@ def get_analytics(db: Session = Depends(get_db), current_user: User = Depends(Ro
     resolved = db.query(Complaint).filter(Complaint.status == "resolved").count()
     closed = db.query(Complaint).filter(Complaint.status == "closed").count()
     
+    # Calculate categories
+    categories_data = db.query(Complaint.category, func.count(Complaint.id)).group_by(Complaint.category).all()
+    categories_dict = {cat: count for cat, count in categories_data}
+    
+    # Calculate average resolution time (in hours)
+    resolved_complaints = db.query(Complaint).filter(Complaint.status.in_(["resolved", "closed"]), Complaint.resolved_at.isnot(None), Complaint.created_at.isnot(None)).all()
+    
+    total_hours = 0
+    if resolved_complaints:
+        for comp in resolved_complaints:
+            # Ensure both are timezone aware for subtraction
+            created = comp.created_at
+            resolved_time = comp.resolved_at
+            if created.tzinfo is None:
+                created = created.replace(tzinfo=pytz.UTC)
+            if resolved_time.tzinfo is None:
+                resolved_time = resolved_time.replace(tzinfo=pytz.UTC)
+            
+            diff = resolved_time - created
+            total_hours += diff.total_seconds() / 3600.0
+            
+        avg_resolution_hours = total_hours / len(resolved_complaints)
+    else:
+        avg_resolution_hours = 0.0
+
     return {
         "total": total,
         "pending": pending,
         "assigned": assigned,
         "in_progress": in_progress,
         "resolved": resolved,
-        "closed": closed
+        "closed": closed,
+        "avg_resolution_hours": round(avg_resolution_hours, 1),
+        "categories": categories_dict
     }
 
 @router.post("/", response_model=ComplaintResponse)
@@ -84,6 +114,10 @@ def update_complaint_status(complaint_id: int, status_update: ComplaintStatusUpd
         raise HTTPException(status_code=400, detail=f"Invalid status. Allowed: {', '.join(allowed_statuses)}")
     
     complaint.status = status_update.status
+    
+    if status_update.status in ["resolved", "closed"] and not complaint.resolved_at:
+        complaint.resolved_at = datetime.utcnow()
+        
     db.commit()
     db.refresh(complaint)
     return complaint

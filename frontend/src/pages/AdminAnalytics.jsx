@@ -8,8 +8,10 @@ import {
     AlertCircle,
     Users,
     Calendar,
-    ChevronRight
+    ChevronRight,
+    PieChart as PieChartIcon
 } from 'lucide-react'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { complaintService } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
@@ -39,12 +41,19 @@ const AdminAnalytics = () => {
     const statCards = useMemo(() => {
         if (!stats) return []
         return [
-            { label: 'Total Logs', value: stats.total, color: 'indigo', icon: <BarChart3 /> },
+            { label: 'Total Requests', value: stats.total, color: 'indigo', icon: <BarChart3 /> },
             { label: 'Unassigned', value: stats.pending, color: 'rose', icon: <AlertCircle /> },
-            { label: 'In Progress', value: stats.in_progress, color: 'amber', icon: <Clock /> },
+            { label: 'Avg Res Time', value: `${stats.avg_resolution_hours || 0} hrs`, color: 'amber', icon: <Clock /> },
             { label: 'Completed', value: stats.resolved + stats.closed, color: 'emerald', icon: <CheckCircle /> },
         ]
     }, [stats])
+
+    const pieData = useMemo(() => {
+        if (!stats || !stats.categories) return []
+        return Object.entries(stats.categories).map(([name, value]) => ({ name, value }))
+    }, [stats])
+
+    const PIE_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
     if (isLoading) return (
         <div className="flex items-center justify-center h-64">
@@ -125,28 +134,44 @@ const AdminAnalytics = () => {
                     </div>
                 </div>
 
-                <div className="glass-card p-8 rounded-[2.5rem] bg-indigo-600 text-white relative flex flex-col justify-between shadow-2xl shadow-indigo-500/30 border-none">
-                    <div>
-                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6">
-                            <Users size={24} />
+                <div className="glass-card p-8 rounded-[2.5rem] relative flex flex-col shadow-sm border border-slate-200/50 dark:border-slate-800/50">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                            <PieChartIcon size={20} />
                         </div>
-                        <h3 className="text-2xl font-bold mb-3">Enterprise Access</h3>
-                        <p className="text-indigo-100 text-sm leading-relaxed mb-6">
-                            Manage your service workforce and monitoring team from one centralized command center.
-                        </p>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Category Distribution</h3>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                            <Calendar size={18} className="text-indigo-200" />
-                            <div className="text-xs">
-                                <div className="font-bold text-indigo-50">Last Backup</div>
-                                <div className="text-indigo-200">Today at 12:45 PM</div>
+                    <div className="flex-1 w-full min-h-[250px]">
+                        {pieData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={90}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
+                                        itemStyle={{ fontWeight: 'bold' }}
+                                    />
+                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: '600' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-slate-400 font-medium text-sm">
+                                No category data yet
                             </div>
-                        </div>
-                        <button className="w-full py-4 bg-white text-indigo-700 font-bold rounded-2xl hover:bg-slate-50 transition-colors shadow-lg">
-                            User Management
-                        </button>
+                        )}
                     </div>
                 </div>
             </div>
