@@ -144,4 +144,4 @@ cd backend && ../.venv/bin/python -m uvicorn app.main:app --reload
 ```bash
 cd frontend && npm run dev
 ```
-trial
+changes
